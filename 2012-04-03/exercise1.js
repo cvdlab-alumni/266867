@@ -10,7 +10,7 @@ var allCentralstructures = STRUCT([centralStructure1,centralStructure2]);
 // Reppresento i muri
 var wall1 = POLYLINE([[47,16],[38,16]]);
 var wall2 = POLYLINE([[41,5],[51,5]]);
-var wall3 = POLYLINE([[44.5,7],[44.5,14]]); //parete da interpretare in posizione
+var wall3 = POLYLINE([[44.5,7],[44.5,14]]); 
 var wall4 = POLYLINE([[42.5,11.5],[37.5,11.5]]);
 var wall5 = POLYLINE([[30,13.5],[40,13.5]]);
 var wall6 = POLYLINE([[25,7.5],[34,7.5]]);
