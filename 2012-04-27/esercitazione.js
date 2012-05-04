@@ -37,7 +37,7 @@ DRAW(curve);
 // P(4): (3,2)
 
 var domain = INTERVALS(1)(20);
-var controlpoints = [[0,0],[3,1],[ 1, 2],[ 2,3],[3,2]];
+var controlpoints = [[3,1],[ 1, 2],[ 2,3],[3,2]];
 // controlpoints con 2 coordinate x ogni punto => 2 = x,y; 3 => x,y,z
 var curveMapping = BEZIER(S0)(controlpoints);
 var curve = MAP(curveMapping)(domain);
@@ -52,7 +52,19 @@ DRAW(curve);
 // ogni semgmento unito all'altro con una curva di CUBIC_HERMITE,
 // seguendo la tangente iniziale(pt inizio) e tg finale(pt finale)
 
+
+
+// =============================================================================
+// Exercise 5: draw with Cubic_CARDINAL
 var domain = INTERVALS(1)(20);
-var controlpoints = [[0,0],[3,2],[4,-1],[7,3],[9,0],[11,1],[12,0]];
+var controlpoints = [[-3,6],[-4,2],[-3,-1],[-1,1],[1.5,1.5],[3,4],[5,5],[7,2],[6,-2],[2,-3]];
 var splineCardinal = SPLINE(CUBIC_CARDINAL(domain))(controlpoints);
-DRAW(splineCardinal);
+DRAW(COLOR([0,0.508,1])(splineCardinal)); 
+
+// =============================================================================
+// Exercise 6: draw with CUBIC_UBSPLINE
+
+var domain = INTERVALS(1)(20);
+var controlpoints = [[-3,6],[-4,2],[-3,-1],[-1,1],[1.5,1.5],[3,4],[5,5],[7,2],[6,-2],[2,-3]];
+var splineCubic = SPLINE(CUBIC_UBSPLINE(domain))(controlpoints);
+DRAW(splineCubic);
