@@ -1,15 +1,20 @@
 // I Domini:
 // =============================================================
 
-var domain2D = DOMAIN([[0,1],[0,1]])([15,15]);
-var domain= INTERVALS(1)(10);
+var domain2D   = DOMAIN([[0,1],[0,1]])([15,15]);
+var domain     = INTERVALS(1)(15);
 var dominioRot = DOMAIN([[0,2],[0,2*PI]])([20,20])
 
 // Colori
-var giallo_tasselli = [220/255, 181/255, 43/255]
-var marrone_tetto = [190/255,94/255,64/255];
-var beige_mura = [216/255,217/255,211/255];
-var celeste_finestre = [173/255,216/255,230/255,0.4];
+var giallo_tasselli  = [220/255, 181/255  , 43/255]
+var marrone_tetto    = [190/255, 94/255   , 64/255];
+var beige_mura       = [216/255, 217/255  , 211/255];
+var celeste_finestre = [173/255, 216/255  , 230/255,0.4];
+var grigio_pietra    = [179/255, 175/255  , 156/255];
+var grigio_marmo     = [255/255, 245/255  , 235/255];
+var verde_prato      = [0/255  , 160/255  , 0/255];
+var grigio_avorio    = [255/255, 255/255  , 240/255];
+
 
 
 // Funzioni di Supporto:
@@ -19,26 +24,27 @@ var celeste_finestre = [173/255,216/255,230/255,0.4];
 // r = raggio, h= altezza, off_n = offset per asse n, closer = {1,se il cilindro è chiuso; 0,altrimenti}
 
   var column = function(r,h,off_x,off_y,off_z,closer){
-  var domainCilynder = DOMAIN([[0,2*PI],[0,h]])([30,30]);
-    var cilynder = function (p) {
-      var a = p[0];
-      var b = p[1];
 
-      var x = off_x + r*SIN(a);
-      var y = off_y + r*COS(a);
-      var z = off_z +b;
-      return [x,y,z];
-  }
-  var mapped = MAP(cilynder)(domainCilynder);
+    var columnpoint     =   [[r+0.1,0,0],[r+0.08,0,h*0.04],[r+0.06,0,h*0.08],[r+0.03,0,h*0.12],
+                             [r,0,h*0.15],[r-0.05,0,h]]
+
+    var n = generate_knots(columnpoint)
+    var curvebasement    = NUBS(S0)(2)(n)(columnpoint);
+    var curvebasementRotSurf    = ROTATIONAL_SURFACE(curvebasement);
+
+    var columna = MAP(curvebasementRotSurf)(dominioRot);
+    var columna1 =  T([0,1,2])([off_x,off_y,off_z])(STRUCT([columna]))
+
 
     if (closer ==0)
-      return mapped;
+      return columna1;
 
     else{
-      var closed1 = DISK(r)()
-      var closed1_t = T([0,1,2])([off_x,off_y,off_z])(closed1)
-      var closed_2_t = T([2])([h])(closed1_t)
-      var cylinderClosed = STRUCT([mapped,closed1_t,closed_2_t])
+      var closed1        = DISK(r)()
+      var closed1_t      = T([0,1,2])([off_x,off_y,off_z])(closed1)
+      var closed_2_t     = T([2])([h])(closed1_t)
+      var cylinderClosed = STRUCT([columna1,closed1_t,closed_2_t])
+
       return cylinderClosed;
     }
 };
@@ -77,7 +83,14 @@ var muroScala2 = SIMPLEX_GRID([[-0.4,10.6],[-10,1.25],[3.7]]);
 var muroG1     = SIMPLEX_GRID([[-0.2,10.8],[-10,1.5],[-3.7,0.3]]);
 var muroG2     = SIMPLEX_GRID([[-0.2,10.8],[-19.75,1.5],[-3.7,0.3]]);
 
-var muriScala  = STRUCT([muroScala1,muroScala2,muroG1,muroG2])
+var muroN1     = SIMPLEX_GRID([[-0.3,10.7],[-19.9,1.45],[-0.4,0.4]]);
+var muroN2     = SIMPLEX_GRID([[-0.2,10.8],[-19.75,1.7],[0.4]]);
+
+var muroS1     = SIMPLEX_GRID([[-0.3,10.7],[-9.9,1.55],[-0.4,0.4]]);
+var muroS2     = SIMPLEX_GRID([[-0.2,10.8],[-9.75,1.8],[0.4]]);
+
+
+var muriScala  = STRUCT([muroScala1,muroScala2,muroG1,muroG2,muroS1,muroS2,muroN2,muroN1])
 
 // 2) Gradini
 // ==================================================================================================
@@ -107,7 +120,7 @@ var gradini = STRUCT([gradino1,gradino2,gradino3,gradino4,gradino5,
 	gradino6,gradino7,gradino8,gradino9,gradino10,gradino11,gradino12,
 	gradino13,gradino14,gradino15,gradino16,gradino17,gradino18,gradino19,gradino20])
 
-var scalinata = STRUCT([gradini,muriScala])
+var scalinata = COLOR(grigio_pietra)(STRUCT([gradini,muriScala]))
 
 
 // 3) Sottoscala
@@ -141,7 +154,8 @@ var under24       = MAP(s23)(domain2D)
 var sottoLaScala  = STRUCT([under22,under_scala,under23,under24])
 
 var sottoLaScala2 = T([1])([9.85])(sottoLaScala);
-var sottoscale    = STRUCT([sottoLaScala,sottoLaScala2])
+var sottoscale    = COLOR(grigio_marmo)(STRUCT([sottoLaScala,sottoLaScala2]))
+
 
 // 4) Basamenti e colonne e Capitelli:
 //=============================================================================
@@ -179,7 +193,7 @@ var all_capitelli = STRUCT([capitello1,capitello2,capitello3,capitello4,capitell
 
 var sopraColonne  = SIMPLEX_GRID([[-8.4,1.3],[-9.7,11.6],[-14.5,0.5]]) //sopra i capitelli
 
-var capiColonne   = STRUCT([all_capitelli,colonne,appoggi,sopraColonne])
+var capiColonne   = COLOR(grigio_marmo)(STRUCT([all_capitelli,colonne,appoggi,sopraColonne]))
 
 // 6) Muri porticato
 // ======================================================================================
@@ -192,7 +206,13 @@ var basso3b = SIMPLEX_GRID([[-13.4,1],[-9.8,1.8],[-8,1.5]])
 var basso2c = SIMPLEX_GRID([[-10,1],[-10,1.4],[-9.5,5.5]])
 var basso3c = SIMPLEX_GRID([[-13.4,1],[-10,1.4],[-9.5,5.5]])
 
-var bassi   = STRUCT([base,basso2,basso2b,basso2c,basso3,basso3b,basso3c])
+var bassRl1 = SIMPLEX_GRID([[-13.2,1.2],[-9.6,2],[0.4]])
+var bassRl2 = SIMPLEX_GRID([[-13.3,1.1],[-9.7,1.9],[-0.4,0.4]])
+
+
+var bassi_a   = COLOR(grigio_marmo)(STRUCT([base,basso2,basso2c,basso3,basso3c]))
+var bassi_b   = COLOR(grigio_pietra)(STRUCT([basso3b,basso2b,bassRl2,bassRl1]))
+var bassi     = STRUCT([bassi_b,bassi_a])
 
 var p_arco  = [[11,11.4,11],[11.5,11.4,11.5],[12,11.4,12],
               [ 12.5,11.4,12],[13,11.4,11.5],[13.4,11.4,11]]
@@ -216,7 +236,7 @@ var under_archi = MAP(archi_under_bez)(domain2D)
 var under2      = MAP(s1)(domain2D)
 var under3      = MAP(s2)(domain2D)
 var under4      = MAP(s3)(domain2D)
-var unders      = STRUCT([under2,under_archi,under3,under4])
+var unders      = COLOR(grigio_marmo)(STRUCT([under2,under_archi,under3,under4]))
 
 var laterale_balcone = STRUCT([unders,bassi])
 var laterale2 = T([1])([9.85])(laterale_balcone);
@@ -227,7 +247,7 @@ var porticato = STRUCT([laterale_balcone,laterale2])
 // 7) Tetto Porticato
 // ==========================================================
 
-var baseTetto = SIMPLEX_GRID([[-8,6.4],[-9.4,12],[-15,0.2]])
+var baseTetto = COLOR(grigio_pietra)(SIMPLEX_GRID([[-8,6.4],[-9.4,12],[-15,0.2]]))
 
 var p_tetto_avanti1    = [[8,9.4,15.2],[8,15.4,18.5],[0,0,0],[0,0,0]]
 var p_tetto_avanti2    = [[8,15.4,18.5],[8,21.4,15.2],[0,0,0],[0,0,0]]
@@ -261,18 +281,21 @@ var horiz_tettus2  = CUBIC_HERMITE(S1)([c_tetto2,c_tetto2_d,[0,0,0],[0,0,0]])
 var h_basso_tetto1 = CUBIC_HERMITE(S1)([c_basso_tetto,c_tetto3_d,[0,0,0],[0,0,0]])
 var h_basso_tetto2 = CUBIC_HERMITE(S1)([c_basso_tetto,c_tetto4_d,[0,0,0],[0,0,0]])
 
-var tetto1       = MAP(tetus)(domain2D)
-var tetto2       = MAP(tetus2)(domain2D)
-var tetto1_d     = MAP(tetus_d)(domain2D)
-var tetto2_d     = MAP(tetus2_d)(domain2D)
-var h_tetto1     = MAP(horiz_tettus1)(domain2D)
-var h_tetto2     = MAP(horiz_tettus2)(domain2D)
-var basso_tetto1 = MAP(h_basso_tetto1)(domain2D)
-var basso_tetto2 = MAP(h_basso_tetto2)(domain2D)
+var tetto1       = COLOR(marrone_tetto)(MAP(tetus)(domain2D))
+var tetto2       = COLOR(marrone_tetto)(MAP(tetus2)(domain2D))
+var tetto1_d     = COLOR(marrone_tetto)(MAP(tetus_d)(domain2D))
+var tetto2_d     = COLOR(marrone_tetto)(MAP(tetus2_d)(domain2D))
+var h_tetto1     = COLOR(grigio_pietra)(MAP(horiz_tettus1)(domain2D))
+var h_tetto2     = COLOR(grigio_pietra)(MAP(horiz_tettus2)(domain2D))
+var basso_tetto1 = COLOR(grigio_marmo)(MAP(h_basso_tetto1)(domain2D))
+var basso_tetto2 = COLOR(grigio_marmo)(MAP(h_basso_tetto2)(domain2D))
 
 
-var all_tetto = STRUCT([ baseTetto,tetto1,tetto2,tetto1_d,tetto2_d,h_tetto1,
-                         h_tetto2,basso_tetto1,basso_tetto2])
+var tetto_porticato = STRUCT([tetto1,tetto2,tetto1_d,tetto2_d,h_tetto1,
+                              h_tetto2,basso_tetto1,basso_tetto2,])
+var all_tetto       = STRUCT([tetto_porticato,baseTetto])
+
+
 // 8) Tasselli
 // ============================================================================================
 var tassello1    = SIMPLEX_GRID([[-8,0.2],[-9.4,0.2],[-14.8,0.2]])
@@ -291,7 +314,7 @@ for(var i=0.4;i<6;i=i+0.4){        // tasselli sinistra
   var tasselloi = T([0,1])([0.4+i,11.8])(tassello1)
   tasselli.models.push(tasselloi)}
 
-var tasselli = COLOR(giallo_tasselli)(tasselli)
+var tasselli = COLOR(grigio_pietra)(tasselli)
 
 var porticatoIntero = STRUCT([all_tetto,porticato,capiColonne,
                               sottoscale,scalinata,muriScala,tasselli])
@@ -324,6 +347,11 @@ var muroSottoCavo9  = SIMPLEX_GRID([[-14.4,0.6],[-18.75,33.75],[-14,2]])
 var muroSottoCavo10 = SIMPLEX_GRID([[-14.4,0.6],[-18.75,4.5,-2.25,20.25,-2.25,4.5],[-16,1.5]])
 var muroSottoCavo11 = SIMPLEX_GRID([[-14.4,0.6],[-18.75,33.75],[-17.5,1]])
 
+var muroInsenature1 =  SIMPLEX_GRID([[-14.2,0.8],[-18.45,34.25],[0.4]])
+var muroInsenature2 =  SIMPLEX_GRID([[-14.3,0.7],[-18.45,34.15],[-0.4,0.4]])
+var muroInsenature3 =  SIMPLEX_GRID([[-14.2,0.8],[-18.45,34.15],[-15,0.2]])
+
+
 // Disegno le finestre:
 
 var finestra1   =  SIMPLEX_GRID([[-14.8,0.2],[-23.25,2.25],[-1,1]])
@@ -337,91 +365,28 @@ var finestra8   =  SIMPLEX_GRID([[-14.8,0.2],[-38.5,1.75],[-12,2]])
 var finestra9   =  SIMPLEX_GRID([[-14.8,0.2],[-23.25,2.25],[-16,1.5]])
 var finestra10  =  SIMPLEX_GRID([[-14.8,0.2],[-45.75,2.25],[-16,1.5]])
 
-var finestre    =  COLOR(celeste_finestre)(STRUCT([finestra1,finestra2,finestra3,finestra4,finestra5,finestra6,finestra7,
-                         finestra8,finestra9,finestra10]))
+var finestre    =  COLOR(celeste_finestre)(STRUCT([finestra1,finestra2,finestra3,finestra4,finestra5,
+                          finestra6,finestra7,finestra8,finestra9,finestra10]))
+
+// Decorazioni finestre
+
+var scalato      = SCALE([0,1,2])([0.04,0.3,0.5])(all_tetto);
+
+var scalato_T    = T([0,1,2])([13.8,19.7,1.5])(scalato)
+
+var scalato_T2   = T([1])([22.5])(scalato_T)
+
+var decorazioni  = STRUCT([scalato_T,scalato_T2])
 
 
-
-
-var muriFacciata = STRUCT([muroSotto1,muroSottoCavo,muroSottoCavo2,muroSottoCavo3,
+var muriFaccia   = COLOR(grigio_avorio)(STRUCT([muroSotto1,muroSottoCavo,muroSottoCavo2,muroSottoCavo3,
                            muroSottoCavo4,muroSottoCavo5,muroSottoCavo6,muroSottoCavo7,
-                           muroSottoCavo8,muroSottoCavo9,muroSottoCavo10,muroSottoCavo11,finestre])
+                           muroSottoCavo8,muroSottoCavo9,muroSottoCavo10,muroSottoCavo11]))
+
+var insenature   = COLOR(grigio_marmo)(STRUCT([muroInsenature1,muroInsenature2,muroInsenature3]))
+
+var muriFacciata = STRUCT([muriFaccia,finestre,decorazioni,insenature])
 DRAW(muriFacciata)
-
-
-// Decorazioni finestra Sinistra(basso triangolo)
-var tettoFinSotto   = [[14.4,23.25,9],[14.4,25.5,9],[0,0,0],[0,0,0]]
-var tettoFinSotto2  = [[14.1,23.25,9],[14.1,25.5,9],[0,0,0],[0,0,0]]
-var tettoFinSottoH1 = [[14.4,23.55,9.3],[14.4,25.2,9.3],[0,0,0],[0,0,0]]
-var tettoFinSottoH2 = [[14.1,23.55,9.3],[14.1,25.2,9.3],[0,0,0],[0,0,0]]
-
-var tettoFinSxSotto1 =[[14.1,23.25,9],[14.1,24.5,10.3],[0,0,0],[0,0,0]]
-var tettoFinSxSotto2 =[[14.1,23.55,9.3],[14.1,24.375,10],[0,0,0],[0,0,0]]
-var tettoFinSxSopra1 =[[14.4,23.25,9],[14.4,24.5,10.3],[0,0,0],[0,0,0]]
-var tettoFinSxSopra2 =[[14.4,23.55,9.3],[14.4,24.375,10],[0,0,0],[0,0,0]]
-
-var tettoFinDxSotto1 =[[14.1,24.5,10.3],[14.1,25.5,9],[0,0,0],[0,0,0]]
-var tettoFinDxSotto2 =[[14.1,24.375,10],[14.1,25.2,9.3],[0,0,0],[0,0,0]]
-var tettoFinDxSopra1 =[[14.4,24.5,10.3],[14.4,25.5,9],[0,0,0],[0,0,0]]
-var tettoFinDxSopra2 =[[14.4,24.375,10],[14.4,25.2,9.3],[0,0,0],[0,0,0]]
-
-
-var c_tettoFinSott1    = CUBIC_HERMITE(S0)(tettoFinSotto);
-var c_tettoFinSotto2   = CUBIC_HERMITE(S0)(tettoFinSotto2)
-var c_tettoFinSottoH1  = CUBIC_HERMITE(S0)(tettoFinSottoH1)
-var c_tettoFinSottoH2  = CUBIC_HERMITE(S0)(tettoFinSottoH2)
-
-var c_tettoFinSxSotto1 = CUBIC_HERMITE(S0)(tettoFinSxSotto1)
-var c_tettoFinSxSotto2 = CUBIC_HERMITE(S0)(tettoFinSxSotto2)
-var c_tettoFinSxSopra1 = CUBIC_HERMITE(S0)(tettoFinSxSopra1)
-var c_tettoFinSxSopra2 = CUBIC_HERMITE(S0)(tettoFinSxSopra2)
-
-var c_tettoFinDxSotto1 = CUBIC_HERMITE(S0)(tettoFinDxSotto1)
-var c_tettoFinDxSotto2 = CUBIC_HERMITE(S0)(tettoFinDxSotto2)
-var c_tettoFinDxSopra1 = CUBIC_HERMITE(S0)(tettoFinDxSopra1)
-var c_tettoFinDxSopra2 = CUBIC_HERMITE(S0)(tettoFinDxSopra2)
-
-var prova1 = COLOR(0,0,1)(MAP(c_tettoFinSxSopra1)(domain))
-var prova4 = COLOR(0,0,1)(MAP(c_tettoFinSxSopra2)(domain))
-
-var prova2 = COLOR(1,0,0)(MAP(c_tettoFinSxSotto1)(domain))
-var prova3 = COLOR(1,0,0)(MAP(c_tettoFinSxSotto2)(domain))
-DRAW(prova1)
-DRAW(prova2)
-DRAW(prova3)
-DRAW(prova4)
-
-
-var d_tettoFinSotto1   =  CUBIC_HERMITE(S1)([c_tettoFinSott1,c_tettoFinSottoH1,[0,0,0],[0,0,0]])
-var d_tettoFinSotto2   =  CUBIC_HERMITE(S1)([c_tettoFinSotto2,c_tettoFinSottoH2,[0,0,0],[0,0,0]])
-var d_tettoFinSotto3   =  CUBIC_HERMITE(S1)([c_tettoFinSottoH1,c_tettoFinSottoH2,[0,0,0],[0,0,0]])
-
-var d_tettoFinSx1      =  CUBIC_HERMITE(S1)([c_tettoFinSxSopra1,c_tettoFinSxSopra2,[0,0,0],[0,0,0]])
-var d_tettoFinSx2      =  CUBIC_HERMITE(S1)([c_tettoFinSxSotto1,c_tettoFinSxSopra1,[0,0,0],[0,0,0]])
-var d_tettoFinSx3      =  CUBIC_HERMITE(S1)([c_tettoFinSxSotto2,c_tettoFinSxSopra2,[0,0,0],[0,0,0]])
-
-var d_tettoFinDx1      =  CUBIC_HERMITE(S1)([c_tettoFinDxSotto1,c_tettoFinDxSopra1,[0,0,0],[0,0,0]])
-var d_tettoFinDx2      =  CUBIC_HERMITE(S1)([c_tettoFinDxSotto2,c_tettoFinDxSopra2,[0,0,0],[0,0,0]])
-var d_tettoFinDx3      =  CUBIC_HERMITE(S1)([c_tettoFinDxSopra1,c_tettoFinDxSopra2,[0,0,0],[0,0,0]])
-
-
-var tettoFinSottoD1       = MAP(d_tettoFinSotto1)(domain2D)
-var tettoFinSottoD2       = MAP(d_tettoFinSotto2)(domain2D)
-var tettoFinSottoD3       = MAP(d_tettoFinSotto3)(domain2D)
-var tettoFinSx1           = MAP(d_tettoFinSx1)(domain2D)
-var tettoFinSx2           = MAP(d_tettoFinSx2)(domain2D)
-var tettoFinSx3           = MAP(d_tettoFinSx3)(domain2D)
-var tettoFinDx1           = MAP(d_tettoFinDx1)(domain2D)
-var tettoFinDx2           = MAP(d_tettoFinDx2)(domain2D)
-var tettoFinDx3           = MAP(d_tettoFinDx3)(domain2D)
-
-
-var finestra = STRUCT([tettoFinSottoD1,tettoFinSottoD2,tettoFinSottoD3,
-                       tettoFinSx1,tettoFinSx2,tettoFinSx3,
-                       tettoFinDx1,tettoFinDx2,tettoFinDx3])
-var finestra_c = COLOR(giallo_tasselli)(finestra)
-DRAW(finestra_c)
-
 
 
 
@@ -441,19 +406,19 @@ DRAW(muriFaccT1)
 DRAW(muriFaccT2)
 DRAW(muriFaccT3)
 
-var anteTetto      = SIMPLEX_GRID([[-14.4,34.2],[-18.4,34.1],[-18.5,0.5]])
+var anteTetto      = COLOR(grigio_marmo)(SIMPLEX_GRID([[-14.4,34.2],[-18.4,34.1],[-18.5,0.5]]))
 DRAW(anteTetto)
 
 
-//=============================================================================
+//=====================================================================================
 //==================== TETTO E CUPOLA =================================================
 
 //1)Tetto
 
-var puntiTettoSx       = [[14.4,18.4,19],[48.6,18.4,19],[0,0,0],[0,0,0]]
-var puntiTettoUp       = [[48.6,18.4,19],[48.6,52.5,19],[0,0,0],[0,0,0]]
-var puntiTettoDx       = [[48.6,52.5,19],[14.4,52.5,19],[0,0,0],[0,0,0]]
-var puntiTettoDwn      = [[14.4,52.5,19],[14.4,18.4,19],[0,0,0],[0,0,0]]
+var puntiTettoSx       = [[14.2,18.2,19],[48.8,18.6,19],[0,0,0],[0,0,0]] // unico
+var puntiTettoUp       = [[48.8,18.2,19],[48.8,52.7,19],[0,0,0],[0,0,0]]
+var puntiTettoDx       = [[48.8,52.7,19],[14.2,52.7,19],[0,0,0],[0,0,0]]
+var puntiTettoDwn      = [[14.2,52.7,19],[14.2,18.2,19],[0,0,0],[0,0,0]]
 
 var puntiSopraTettoSx  = [[29.5,33.45,24],[33.5,33.45,24],[0,0,0],[0,0,0]]
 var puntiSopraTettoUp  = [[33.5,33.45,24],[33.5,37.45,24],[0,0,0],[0,0,0]]
@@ -591,7 +556,7 @@ var curvaRotSurf_20    = ROTATIONAL_SURFACE(curva_cupola_20);
 var curvaMapRotSurf_20 = MAP(curvaRotSurf_20)(dominioRot);
 
 
-var muriVerticale      = COLOR(beige_mura)(STRUCT([curvaMapRotSurf_1,curvaMapRotSurf_3,curvaMapRotSurf_5,
+var muriVerticale      = COLOR(grigio_marmo)(STRUCT([curvaMapRotSurf_1,curvaMapRotSurf_3,curvaMapRotSurf_5,
                                                    curvaMapRotSurf_7,curvaMapRotSurf_9,curvaMapRotSurf_11,
                                                    curvaMapRotSurf_13,curvaMapRotSurf_15,curvaMapRotSurf_17,
                                                    curvaMapRotSurf_19]))
@@ -610,3 +575,5 @@ var tettoBasso = COLOR(marrone_tetto)(STRUCT([tettoSx,tettoDx,tettoUp,tettoDwn])
 DRAW(tettoBasso)
 
 
+var prato = COLOR(verde_prato)(SIMPLEX_GRID([[65.2],[70.1],[0.05]]))
+DRAW(prato)
