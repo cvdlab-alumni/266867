@@ -1,27 +1,30 @@
 // I Domini:
-// =============================================================
+// ==============================================================
 
 var domain2D   = DOMAIN([[0,1],[0,1]])([15,15]);
 var domain     = INTERVALS(1)(15);
 var dominioRot = DOMAIN([[0,2],[0,2*PI]])([20,20])
 
+
 // Colori
+//===============================================================
+
 var giallo_tasselli  = [220/255, 181/255  , 43/255]
 var marrone_tetto    = [190/255, 94/255   , 64/255];
 var beige_mura       = [216/255, 217/255  , 211/255];
-var celeste_finestre = [173/255, 216/255  , 230/255,0.4];
+var celeste_finestre = [173/255, 216/255  , 230/255,0.6];
 var grigio_pietra    = [179/255, 175/255  , 156/255];
 var grigio_marmo     = [255/255, 245/255  , 235/255];
 var verde_prato      = [0/255  , 160/255  , 0/255];
 var grigio_avorio    = [255/255, 255/255  , 240/255];
 
 
-
 // Funzioni di Supporto:
 // ===============================================================
 
 // Funzione per la generazione delle  colonne
-// r = raggio, h= altezza, off_n = offset per asse n, closer = {1,se il cilindro è chiuso; 0,altrimenti}
+// r = raggio, h= altezza, off_n = offset per asse n,
+// closer = {1,se il cilindro è chiuso; 0,altrimenti}
 
   var column = function(r,h,off_x,off_y,off_z,closer){
 
@@ -325,7 +328,7 @@ var porticatoT3 =  T([0,1])([-4,66.9])(R([0,1])(-PI/2)(porticatoT))
 var porticatoT4 =  T([0,1])([63,70.9])(R([0,1])(-PI)(porticatoT))
 
 var porticati   =  STRUCT([porticatoT,porticatoT2,porticatoT3,porticatoT4])
-DRAW(porticati)
+
 
 // 9) Primo Muro
 // ============================================================================
@@ -352,7 +355,8 @@ var muroInsenature2 =  SIMPLEX_GRID([[-14.3,0.7],[-18.45,34.15],[-0.4,0.4]])
 var muroInsenature3 =  SIMPLEX_GRID([[-14.2,0.8],[-18.45,34.15],[-15,0.2]])
 
 
-// Disegno le finestre:
+// 10) Disegno le finestre:
+// ============================================================================================
 
 var finestra1   =  SIMPLEX_GRID([[-14.8,0.2],[-23.25,2.25],[-1,1]])
 var finestra2   =  SIMPLEX_GRID([[-14.8,0.2],[-45.75,2.25],[-1,1]])
@@ -368,7 +372,8 @@ var finestra10  =  SIMPLEX_GRID([[-14.8,0.2],[-45.75,2.25],[-16,1.5]])
 var finestre    =  COLOR(celeste_finestre)(STRUCT([finestra1,finestra2,finestra3,finestra4,finestra5,
                           finestra6,finestra7,finestra8,finestra9,finestra10]))
 
-// Decorazioni finestre
+// 11) Decorazioni finestre
+// ============================================================================================
 
 var scalato      = SCALE([0,1,2])([0.04,0.3,0.5])(all_tetto);
 
@@ -379,19 +384,17 @@ var scalato_T2   = T([1])([22.5])(scalato_T)
 var decorazioni  = STRUCT([scalato_T,scalato_T2])
 
 
-var muriFaccia   = COLOR(grigio_avorio)(STRUCT([muroSotto1,muroSottoCavo,muroSottoCavo2,muroSottoCavo3,
-                           muroSottoCavo4,muroSottoCavo5,muroSottoCavo6,muroSottoCavo7,
-                           muroSottoCavo8,muroSottoCavo9,muroSottoCavo10,muroSottoCavo11]))
+var muriFaccia   = COLOR(grigio_avorio)(STRUCT([muroSotto1,muroSottoCavo,muroSottoCavo2,
+                           muroSottoCavo3,muroSottoCavo4,muroSottoCavo5,muroSottoCavo6,
+                           muroSottoCavo7,muroSottoCavo8,muroSottoCavo9,muroSottoCavo10,muroSottoCavo11]))
 
 var insenature   = COLOR(grigio_marmo)(STRUCT([muroInsenature1,muroInsenature2,muroInsenature3]))
 
 var muriFacciata = STRUCT([muriFaccia,finestre,decorazioni,insenature])
-DRAW(muriFacciata)
 
 
-
-// =============================================================================================
-// ==========================TRASLAZIONI FACCIATE===============================================
+// 12) Traslazioni Facciate
+// =====================================================================================
 
 var muriFacciataT1 = R([0,1])(PI/2)(muriFacciata)
 var muriFacciataT2 = R([0,1])(-PI/2)(muriFacciata)
@@ -402,18 +405,15 @@ var muriFaccT1     = T([0,1])([66.9,4])(muriFacciataT1)  // sinistra
 var muriFaccT2     = T([0,1])([-4,66.9])(muriFacciataT2) // destra
 var muriFaccT3     = T([0,1])([63,70.9])(muriFacciataT3) // dietro,da sistema
 
-DRAW(muriFaccT1)
-DRAW(muriFaccT2)
-DRAW(muriFaccT3)
+var muriFacciate   = STRUCT([muriFaccT1,muriFaccT2,muriFaccT3,muriFacciata])
 
 var anteTetto      = COLOR(grigio_marmo)(SIMPLEX_GRID([[-14.4,34.2],[-18.4,34.1],[-18.5,0.5]]))
-DRAW(anteTetto)
+
+var muriEportici   = STRUCT([muriFacciate,porticati,anteTetto])
 
 
-//=====================================================================================
-//==================== TETTO E CUPOLA =================================================
-
-//1)Tetto
+// 13) Tetto
+// =====================================================================================
 
 var puntiTettoSx       = [[14.2,18.2,19],[48.8,18.6,19],[0,0,0],[0,0,0]] // unico
 var puntiTettoUp       = [[48.8,18.2,19],[48.8,52.7,19],[0,0,0],[0,0,0]]
@@ -447,7 +447,9 @@ var tettoDx    = MAP(c_tettoDx)(domain2D)
 var tettoUp    = MAP(c_tettoUp)(domain2D)
 var tettoDwn   = MAP(c_tettoDwn)(domain2D)
 
-// 2) Cupola
+// 14) Cupola
+// =====================================================================================
+
 
 var puntiCupola_1      = [[8.5,0,0],[8.5,0,1],[8.5,0,1.7]]
 var knots_cupola       = generate_knots(puntiCupola_1); // Vale per tutte e 19
@@ -567,13 +569,13 @@ var tegolato           = COLOR(marrone_tetto)(STRUCT([curvaMapRotSurf_2,curvaMap
                                                       curvaMapRotSurf_20]));
 
 
-var cupola = T([0,1,2])([31.5,35.5,21.5])(STRUCT([muriVerticale, tegolato]))
-DRAW(cupola)
+var cupola             = T([0,1,2])([31.5,35.5,21.5])(STRUCT([muriVerticale, tegolato]))
 
 
-var tettoBasso = COLOR(marrone_tetto)(STRUCT([tettoSx,tettoDx,tettoUp,tettoDwn]))
-DRAW(tettoBasso)
+var tettoBasso         = COLOR(marrone_tetto)(STRUCT([tettoSx,tettoDx,tettoUp,tettoDwn]))
 
 
-var prato = COLOR(verde_prato)(SIMPLEX_GRID([[65.2],[70.1],[0.05]]))
-DRAW(prato)
+var prato              = COLOR(verde_prato)(SIMPLEX_GRID([[65.2],[70.1],[0.05]]))
+
+var villaLaRotonda     = STRUCT([muriEportici,cupola,tettoBasso,prato])
+DRAW(villaLaRotonda)
